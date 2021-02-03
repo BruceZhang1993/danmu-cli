@@ -8,6 +8,7 @@ license = "AGPL-3.0-only"
 [tool.poetry.dependencies]
 python = ">=3.7"
 aiohttp = "^3.7.3"
+pydantic = "^1.7.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.2"
