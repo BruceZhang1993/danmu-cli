@@ -154,30 +154,9 @@ class BilibiliLiveDanmuService:
                 raise BilibiliServiceException(res.message, res.code)
         return res.data
 
-    async def ws_connect(self, roomid):
-        loop = asyncio.get_event_loop()
-        if self.ws and not self.ws.closed:
-            return
+    async def get_ws_info(self, roomid):
         room_init_data = await self.room_init(roomid)
         token_data = await self.get_danmu_key(room_init_data.room_id)
-        async with self.session.ws_connect(self.DANMU_WS) as ws:
-            self.ws = ws
-            payload = {'uid': int(1e14 + 2e14 * random()), 'roomid': room_init_data.room_id, 'protover': 1,
-                       'platform': 'web', 'clientver': '1.14.1', 'type': 2, 'key': token_data.token}
-            await ws.send_bytes(self.encode_payload(payload, type_=self.TYPE_JOIN_ROOM))
-            self.timer = Timer(30, self.send_heatbeat)
-            async for msg in ws:
-                msg: WSMessage
-                if msg.type == WSMsgType.BINARY:
-                    for data in self.decode_msg(msg.data):
-                        danmu = DanmuData(**data)
-                        for cb in self.callbacks.union(self.external_callbacks):
-                            try:
-                                if asyncio.iscoroutinefunction(cb):
-                                    await cb(danmu)
-                                else:
-                                    loop.run_in_executor(None, cb, danmu)
-                            except Exception as err:
-                                pass
-                else:
-                    print(msg)
+        payload = {'uid': int(1e14 + 2e14 * random()), 'roomid': room_init_data.room_id, 'protover': 1,
+                   'platform': 'web', 'clientver': '1.14.1', 'type': 2, 'key': token_data.token}
+        return self.DANMU_WS, self.encode_payload(payload, type_=self.TYPE_JOIN_ROOM), self.encode_payload('[object Object]')

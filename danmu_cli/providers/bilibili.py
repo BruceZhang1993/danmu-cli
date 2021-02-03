@@ -1,27 +1,25 @@
-from danmu_cli.base import BaseProvider, BaseDanmu, BaseType
-from danmu_cli.providers.bilibili_content.service import BilibiliLiveDanmuService, DanmuData
+from typing import Tuple, Awaitable
+
+from aiohttp import WSMessage
+
+from danmu_cli.base import BaseDanmu, BaseWebsocketProvider
+from danmu_cli.providers.bilibili_content.service import BilibiliLiveDanmuService
 
 
 class BilibiliDanmu(BaseDanmu):
     pass
 
 
-class BilibiliProvider(BaseProvider):
-    service: BilibiliLiveDanmuService
+class BilibiliProvider(BaseWebsocketProvider):
+    bservice: BilibiliLiveDanmuService
 
     def setup(self):
-        self.service = BilibiliLiveDanmuService()
-        self.service.register_callback(self.callback)
+        self.bservice = BilibiliLiveDanmuService()
 
-    def callback(self, danmu: DanmuData):
-        if danmu.msg_type == BilibiliLiveDanmuService.TYPE_DANMUKU:
-            d = BilibiliDanmu()
-            d.type = BaseType.danmuku
-            d.message = f'{danmu.name}: {danmu.content}'
-            self.send(d)
+    async def received(self, message: WSMessage):
+        print(self.bservice.decode_msg(message.data))
 
-    async def run(self):
-        await self.service.ws_connect(3573632)
-
-    def teardown(self):
-        self.service.unregister_callback(self.callback)
+    async def ws_info(self) -> Awaitable[Tuple[str, bytes, bytes]]:
+        result = await self.bservice.get_ws_info(466)
+        await self.bservice.session.close()
+        return result
