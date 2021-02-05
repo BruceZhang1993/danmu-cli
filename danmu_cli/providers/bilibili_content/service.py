@@ -159,4 +159,4 @@ class BilibiliLiveDanmuService:
         token_data = await self.get_danmu_key(room_init_data.room_id)
         payload = {'uid': int(1e14 + 2e14 * random()), 'roomid': room_init_data.room_id, 'protover': 1,
                    'platform': 'web', 'clientver': '1.14.1', 'type': 2, 'key': token_data.token}
-        return self.DANMU_WS, self.encode_payload(payload, type_=self.TYPE_JOIN_ROOM), self.encode_payload('[object Object]')
+        return self.DANMU_WS, [self.encode_payload(payload, type_=self.TYPE_JOIN_ROOM)], self.encode_payload('[object Object]')

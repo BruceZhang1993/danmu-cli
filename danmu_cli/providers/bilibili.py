@@ -19,7 +19,7 @@ class BilibiliProvider(BaseWebsocketProvider):
     async def received(self, message: WSMessage):
         print(self.bservice.decode_msg(message.data))
 
-    async def ws_info(self) -> Awaitable[Tuple[str, bytes, bytes]]:
-        result = await self.bservice.get_ws_info(466)
+    async def ws_info(self) -> Awaitable[Tuple[str, list, bytes]]:
+        result = await self.bservice.get_ws_info(self.roomid)
         await self.bservice.session.close()
         return result

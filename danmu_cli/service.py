@@ -7,12 +7,12 @@ from aiohttp import ClientSession, ClientWebSocketResponse, WSMessage
 
 
 class WebsocketDanmuService:
-    def __init__(self, ws_address: str, payload: bytes, hb: bytes, interval: int,
+    def __init__(self, ws_address: str, payloads: list, hb: bytes, interval: int,
                  callback: Callable[[WSMessage], Optional[Awaitable]]):
         self.ws: Optional[ClientWebSocketResponse] = None
         self.session = ClientSession()
         self.ws_address = ws_address
-        self.payload = payload
+        self.payloads = payloads
         self.hb = hb
         self.interval = interval
         self.heartbeat_task: Optional['Future'] = None
@@ -32,7 +32,8 @@ class WebsocketDanmuService:
             await self.send_heartbeat_once()
 
     async def running(self):
-        await self.ws.send_bytes(self.payload)
+        for payload in self.payloads:
+            await self.ws.send_bytes(payload)
         self.heartbeat_task = asyncio.ensure_future(self.send_heartbeat())
         async for msg in self.ws:
             msg: WSMessage
