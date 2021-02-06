@@ -30,6 +30,7 @@ setup(
     author='Bruce Zhang',
     author_email='zttt183525594@gmail.com',
     license='AGPL-3.0-only',
+    entry_points={"console_scripts": ["danmu-cli = danmu_cli.main:main"]},
     packages=['danmu_cli', 'danmu_cli.presenters', 'danmu_cli.providers', 'danmu_cli.providers.bilibili_content', 'danmu_cli.providers.tars', 'danmu_cli.providers.tars.tars'],
     package_dir={"": "."},
     package_data={"danmu_cli.providers.tars.tars": ["*.tars"]},

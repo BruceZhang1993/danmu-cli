@@ -837,10 +837,13 @@ type = "legacy"
 url = "https://pypi.doubanio.com/simple"
 reference = "douban"
 
+[extras]
+qt = []
+
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7"
-content-hash = "187ac061e2c81650e16aaab219de10666a483207c20bfafc40f06f902e9b59a4"
+content-hash = "aada34a7b1301270ec4131104a6ebc9ce3fc707a17e3bf3977aeaadff8babacb"
 
 [metadata.files]
 aiohttp = [
