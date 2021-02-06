@@ -10,6 +10,10 @@ from danmu_cli.base import BasePresenter, BaseProvider
 from danmu_cli.presenters import get_presenter
 from danmu_cli.providers import get_provider
 
+import pkg_resources
+from . import __appname__, __appart__
+__version__ = pkg_resources.get_distribution('danmu-cli').version
+
 presenter_type: Type[BasePresenter]
 provider_type: Type[BaseProvider]
 presenter_obj: BasePresenter
@@ -51,9 +55,18 @@ async def gracefully_quit():
     presenter_obj.teardown()
 
 
-@click.command()
+def print_version(ctx, _, value):
+    if not value or ctx.resilient_parsing:
+        return
+    click.echo(__appart__)
+    click.echo(f'{__appname__} - Version {__version__}')
+    ctx.exit()
+
+
+@click.command(help=f'{__appname__} - Version {__version__}')
+@click.option('--version', '-V', is_flag=True, callback=print_version, expose_value=False, is_eager=True)
 @click.argument('roomid', required=True)
-@click.option('--provider', help='Provider name', type=click.Choice(['bilibili', 'douyu', 'huya']))
+@click.option('--provider', '-p', help='Provider name', type=click.Choice(['bilibili', 'douyu', 'huya']))
 @click.option('--presenter', help='Presenter name', type=click.Choice(['default']), default='default')
 def main(roomid: str, provider: str, presenter: str = 'default'):
     if roomid.startswith('http'):
