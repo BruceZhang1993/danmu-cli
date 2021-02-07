@@ -34,7 +34,8 @@ name = "tuna"
 url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
 
 [tool.poetry.extras]
-qt = ['qasync', 'pyside2']
+qt5 = ['qasync', 'pyside2']
+qt6 = ['qasync', 'pyside6']
 
 [tool.poetry.scripts]
 danmu-cli = 'danmu_cli.main:main'

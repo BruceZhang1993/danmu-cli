@@ -1,4 +1,4 @@
-from typing import Tuple, Awaitable
+from typing import Tuple, Awaitable, Union, Any
 
 from aiohttp import WSMessage
 
@@ -7,7 +7,20 @@ from danmu_cli.providers.bilibili_content.service import BilibiliLiveDanmuServic
 
 
 class BilibiliDanmu(BaseDanmu):
-    pass
+    msg_type: str
+    content: Union[bytes, dict, Any]
+
+    @property
+    def message(self):
+        pass
+
+    @property
+    def type(self):
+        pass
+
+    @property
+    def username(self):
+        pass
 
 
 class BilibiliProvider(BaseWebsocketProvider):
@@ -17,7 +30,8 @@ class BilibiliProvider(BaseWebsocketProvider):
         self.bservice = BilibiliLiveDanmuService()
 
     async def received(self, message: WSMessage):
-        print(self.bservice.decode_msg(message.data))
+        for msg in self.bservice.decode_msg(message.data):
+            print(msg)
 
     async def ws_info(self) -> Awaitable[Tuple[str, list, bytes]]:
         result = await self.bservice.get_ws_info(self.roomid)

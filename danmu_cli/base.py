@@ -19,7 +19,20 @@ class BaseType(Enum):
 
 
 class BaseDanmu(BaseModel):
-    pass
+    @property
+    @abstractmethod
+    def message(self):
+        pass
+
+    @property
+    @abstractmethod
+    def type(self):
+        pass
+
+    @property
+    @abstractmethod
+    def username(self):
+        pass
 
 
 class BasePresenter(metaclass=ABCMeta):

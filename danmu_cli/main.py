@@ -1,18 +1,20 @@
 import asyncio
 import signal
 import sys
-from typing import Type
+from typing import Type, Optional, Tuple
 from urllib.parse import urlparse
 
 import click
+import pkg_resources
 
 from danmu_cli.base import BasePresenter, BaseProvider
 from danmu_cli.presenters import get_presenter
 from danmu_cli.providers import get_provider
-
-import pkg_resources
 from . import __appname__, __appart__
+
 __version__ = pkg_resources.get_distribution('danmu-cli').version
+
+from .util import asynchronous_run
 
 presenter_type: Type[BasePresenter]
 provider_type: Type[BaseProvider]
@@ -25,34 +27,23 @@ def initialize(roomid: str, provider: str, presenter: str = 'default'):
     presenter_type = get_presenter(presenter)
     provider_type = get_provider(provider)
     presenter_obj = presenter_type()
-    presenter_obj.setup()
     provider_obj = provider_type()
     provider_obj.presenter = presenter_obj
     provider_obj.roomid = roomid
-    provider_obj.setup()
 
 
 async def running():
-    loop = asyncio.get_event_loop()
-    if asyncio.iscoroutinefunction(provider_obj.run):
-        await provider_obj.run()
-    else:
-        await loop.run_in_executor(None, provider_obj.run)
-    if asyncio.iscoroutinefunction(provider_obj.teardown):
-        await provider_obj.teardown()
-    else:
-        await loop.run_in_executor(None, provider_obj.teardown)
-    presenter_obj.teardown()
+    presenter_obj.setup()
+    provider_obj.setup()
+    await asynchronous_run(provider_obj.run)
+    await asynchronous_run(provider_obj.teardown)
+    await asynchronous_run(presenter_obj.teardown)
 
 
 async def gracefully_quit():
     print(f'\nSignal received. Gracefully quitting...')
-    loop = asyncio.get_event_loop()
-    if asyncio.iscoroutinefunction(provider_obj.teardown):
-        await provider_obj.teardown()
-    else:
-        await loop.run_in_executor(None, provider_obj.teardown)
-    presenter_obj.teardown()
+    await asynchronous_run(provider_obj.teardown)
+    await asynchronous_run(presenter_obj.teardown)
 
 
 def print_version(ctx, _, value):
@@ -63,6 +54,24 @@ def print_version(ctx, _, value):
     ctx.exit()
 
 
+def parse_provider(uri: str) -> Tuple[Optional[str], Optional[str]]:
+    provider = None
+    roomid = None
+    parsed = urlparse(uri)
+    host = parsed.netloc
+    path = parsed.path
+    if host.endswith('bilibili.com'):
+        provider = 'bilibili'
+        roomid = path.split('/')[-1]
+    elif host.endswith('douyu.com'):
+        provider = 'douyu'
+        roomid = path.split('/')[-1]
+    elif host.endswith('huya.com'):
+        provider = 'huya'
+        roomid = path.split('/')[-1]
+    return provider, roomid
+
+
 @click.command(help=f'{__appname__} - Version {__version__}')
 @click.option('--version', '-V', is_flag=True, callback=print_version, expose_value=False, is_eager=True)
 @click.argument('roomid', required=True)
@@ -70,18 +79,7 @@ def print_version(ctx, _, value):
 @click.option('--presenter', help='Presenter name', type=click.Choice(['default']), default='default')
 def main(roomid: str, provider: str, presenter: str = 'default'):
     if roomid.startswith('http'):
-        parsed = urlparse(roomid)
-        host = parsed.netloc
-        path = parsed.path
-        if host.endswith('bilibili.com'):
-            provider = 'bilibili'
-            roomid = path.split('/')[-1]
-        elif host.endswith('douyu.com'):
-            provider = 'douyu'
-            roomid = path.split('/')[-1]
-        elif host.endswith('huya.com'):
-            provider = 'huya'
-            roomid = path.split('/')[-1]
+        provider, roomid = parse_provider(roomid)
     if provider is None:
         click.echo('cannot find provider', err=True)
         sys.exit(1)

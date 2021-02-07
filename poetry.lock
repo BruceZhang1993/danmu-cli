@@ -838,12 +838,13 @@ url = "https://pypi.doubanio.com/simple"
 reference = "douban"
 
 [extras]
-qt = []
+qt5 = []
+qt6 = []
 
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7"
-content-hash = "aada34a7b1301270ec4131104a6ebc9ce3fc707a17e3bf3977aeaadff8babacb"
+content-hash = "b81361fc1267845f5ae1d86b1c2cf62efd42fb58df6674c5f7fa36631bb5fdf1"
 
 [metadata.files]
 aiohttp = [

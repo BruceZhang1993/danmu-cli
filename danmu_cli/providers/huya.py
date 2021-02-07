@@ -5,7 +5,7 @@ import aiohttp
 from aiohttp import WSMessage
 
 from .tars import tarscore
-from ..base import BaseWebsocketProvider, BaseDanmu
+from ..base import BaseWebsocketProvider, BaseDanmu, BaseType
 
 
 class HuyaService:
@@ -90,6 +90,21 @@ class HuyaService:
 
 
 class HuyaDanmu(BaseDanmu):
+    @property
+    def type(self):
+        if self.msg_type == 'danmaku':
+            return BaseType.danmuku
+        else:
+            return BaseType.other
+
+    @property
+    def message(self):
+        return self.content
+
+    @property
+    def username(self):
+        return self.name
+
     msg_type: Optional[str]
     name: Optional[str]
     content: Optional[str]
